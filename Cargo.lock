@@ -2035,6 +2035,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
+name = "encoding_rs"
+version = "0.8.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b45de904aa0b010bce2ab45264d0631681847fa7b6f2eaa7dab7619943bc4f59"
+dependencies = [
+ "cfg-if",
+]
+
+[[package]]
 name = "endian-type"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3188,7 +3197,7 @@ dependencies = [
  "tokio-util",
  "tracing",
  "url",
- "webpki-roots",
+ "webpki-roots 0.26.1",
 ]
 
 [[package]]
@@ -4121,7 +4130,7 @@ dependencies = [
  "reth-ethereum-payload-builder",
  "reth-node-api",
  "reth-node-ethereum",
- "reth-optimism-payload-builder",
+ "reth-optimism-payload-builder 0.2.0-beta.5",
  "reth-payload-builder",
  "reth-primitives",
  "reth-provider",
@@ -4829,6 +4838,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "reqwest"
+version = "0.11.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd67538700a17451e7cba03ac727fb961abb7607553461627b97de0b89cf4a62"
+dependencies = [
+ "base64 0.21.7",
+ "bytes",
+ "encoding_rs",
+ "futures-core",
+ "futures-util",
+ "h2",
+ "http",
+ "http-body",
+ "hyper",
+ "hyper-rustls",
+ "ipnet",
+ "js-sys",
+ "log",
+ "mime",
+ "once_cell",
+ "percent-encoding",
+ "pin-project-lite",
+ "rustls 0.21.12",
+ "rustls-pemfile 1.0.4",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "sync_wrapper",
+ "system-configuration",
+ "tokio",
+ "tokio-rustls 0.24.1",
+ "tower-service",
+ "url",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "webpki-roots 0.25.4",
+ "winreg",
+]
+
+[[package]]
 name = "resolv-conf"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4885,6 +4935,7 @@ dependencies = [
  "reth-node-core",
  "reth-node-ethereum",
  "reth-node-events",
+ "reth-node-optimism",
  "reth-payload-builder",
  "reth-payload-validator",
  "reth-primitives",
@@ -5727,12 +5778,72 @@ dependencies = [
 ]
 
 [[package]]
+name = "reth-node-optimism"
+version = "0.2.0-beta.6"
+source = "git+https://github.com/paradigmxyz/reth?tag=v0.2.0-beta.6#ac29b4b73be382caf2a2462d426e6bad75e18af9"
+dependencies = [
+ "async-trait",
+ "clap",
+ "eyre",
+ "http",
+ "http-body",
+ "hyper",
+ "jsonrpsee",
+ "parking_lot 0.12.2",
+ "reqwest",
+ "reth-basic-payload-builder",
+ "reth-evm",
+ "reth-interfaces",
+ "reth-network",
+ "reth-node-api",
+ "reth-node-builder",
+ "reth-optimism-payload-builder 0.2.0-beta.6",
+ "reth-payload-builder",
+ "reth-primitives",
+ "reth-provider",
+ "reth-revm",
+ "reth-rpc",
+ "reth-rpc-types",
+ "reth-rpc-types-compat",
+ "reth-tracing",
+ "reth-transaction-pool",
+ "revm",
+ "revm-primitives",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "reth-optimism-payload-builder"
 version = "0.2.0-beta.5"
 dependencies = [
  "alloy-rlp",
  "reth-basic-payload-builder",
  "reth-node-api",
+ "reth-payload-builder",
+ "reth-primitives",
+ "reth-provider",
+ "reth-revm",
+ "reth-rpc-types",
+ "reth-rpc-types-compat",
+ "reth-transaction-pool",
+ "revm",
+ "sha2 0.10.8",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "reth-optimism-payload-builder"
+version = "0.2.0-beta.6"
+source = "git+https://github.com/paradigmxyz/reth?tag=v0.2.0-beta.6#ac29b4b73be382caf2a2462d426e6bad75e18af9"
+dependencies = [
+ "alloy-rlp",
+ "reth-basic-payload-builder",
+ "reth-engine-primitives",
+ "reth-evm",
  "reth-payload-builder",
  "reth-primitives",
  "reth-provider",
@@ -6801,6 +6912,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_urlencoded"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3491c14715ca2294c4d6a88f15e84739788c1d030eed8c110436aafdaa2f3fd"
+dependencies = [
+ "form_urlencoded",
+ "itoa",
+ "ryu",
+ "serde",
+]
+
+[[package]]
 name = "serde_with"
 version = "3.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7226,6 +7349,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "sync_wrapper"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
+
+[[package]]
 name = "synstructure"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7234,6 +7363,27 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.65",
+]
+
+[[package]]
+name = "system-configuration"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba3a3adc5c275d719af8cb4272ea1c4a6d668a777f37e115f6d11ddbc1c8e0e7"
+dependencies = [
+ "bitflags 1.3.2",
+ "core-foundation",
+ "system-configuration-sys",
+]
+
+[[package]]
+name = "system-configuration-sys"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a75fb188eb626b924683e3b95e3a48e63551fcfb51949de2f06a9d91dbee93c9"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
 ]
 
 [[package]]
@@ -8085,6 +8235,12 @@ dependencies = [
  "js-sys",
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "webpki-roots"
+version = "0.25.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f20c57d8d7db6d3b86154206ae5d8fba62dd39573114de97c2cb0578251f8e1"
 
 [[package]]
 name = "webpki-roots"

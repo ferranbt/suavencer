@@ -20,17 +20,30 @@ repository = "https://github.com/paradigmxyz/reth"
 exclude = [".github/"]
 
 [workspace.dependencies]
-reth_provider = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
+reth-optimism-payload-builder = { path = "crates/optimism", features = [
+    "optimism",
+] }
 
-reth = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
+reth-basic-payload-builder = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
+reth_provider = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6", features = [
+    "optimism",
+] }
+reth = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6", features = [
+    "optimism",
+] }
 reth-payload-builder = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
-reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
+reth-primitives = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6", features = [
+    "optimism",
+] }
 reth-node-api = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
 reth-node-ethereum = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
 reth-ethereum-payload-builder = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
-reth-basic-payload-builder = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
-reth-provider = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
-reth-revm = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
+reth-provider = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6", features = [
+    "optimism",
+] }
+reth-revm = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6", features = [
+    "optimism",
+] }
 reth-rpc-types = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
 reth-rpc-types-compat = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
 reth-transaction-pool = { git = "https://github.com/paradigmxyz/reth", tag = "v0.2.0-beta.6" }
@@ -46,5 +59,3 @@ futures-util = "0.3.25"
 tracing = "0.1.0"
 alloy-sol-types = { version = "0.6.2", features = ["json"] }
 alloy-rlp = "0.3.4"
-
-reth-optimism-payload-builder = { path = "crates/optimism" }

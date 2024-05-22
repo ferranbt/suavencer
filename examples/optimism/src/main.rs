@@ -11,9 +11,6 @@ use reth_basic_payload_builder::{BasicPayloadJobGenerator, BasicPayloadJobGenera
 use reth_basic_payload_builder::{BuildArguments, BuildOutcome, PayloadBuilder, PayloadConfig};
 use reth_node_ethereum::{EthEngineTypes, EthereumNode};
 use reth_payload_builder::PayloadBuilderService;
-use reth_payload_builder::{
-    error::PayloadBuilderError, EthBuiltPayload, EthPayloadBuilderAttributes,
-};
 
 //use alloy_sol_types::{sol, SolCall};
 //use Vm::{F11Call, X};
@@ -39,11 +36,15 @@ where
             ctx.evm_config().clone(),
         );
 
+        let conf = ctx.payload_builder_config();
+
         let payload_job_config = BasicPayloadJobGeneratorConfig::default()
             .interval(conf.interval())
             .deadline(conf.deadline())
             .max_payload_tasks(conf.max_payload_tasks())
-            .extradata(conf.extradata_bytes());
+            // no extradata for OP
+            .extradata(Default::default())
+            .max_gas_limit(conf.max_gas_limit());
 
         let payload_generator = BasicPayloadJobGenerator::with_builder(
             ctx.provider().clone(),
@@ -53,11 +54,16 @@ where
             ctx.chain_spec(),
             payload_builder,
         );
+
+        let (x, y) =
+            PayloadBuilderService::new(payload_generator, ctx.provider().canonical_state_stream());
+
         let (payload_service, payload_builder) =
             PayloadBuilderService::new(payload_generator, ctx.provider().canonical_state_stream());
 
-        ctx.task_executor()
-            .spawn_critical("custom payload builder service", Box::pin(payload_service));
+        /*ctx.task_executor()
+            .spawn_critical("payload builder service", Box::pin(payload_service));
+        */
 
         Ok(payload_builder)
     }

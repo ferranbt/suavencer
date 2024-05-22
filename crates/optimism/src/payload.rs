@@ -51,14 +51,23 @@ impl PayloadBuilderAttributes for OptimismPayloadBuilderAttributes {
                 .iter()
                 .map(|tx| TransactionSigned::decode_enveloped(&mut tx.as_ref()))
                 .collect::<Result<_, _>>()?;
-            (payload_id_optimism(&parent, &attributes, &transactions), transactions)
+            (
+                payload_id_optimism(&parent, &attributes, &transactions),
+                transactions,
+            )
         };
 
-        let withdraw = attributes.payload_attributes.withdrawals.map(|withdrawals| {
-            Withdrawals::new(
-                withdrawals.into_iter().map(convert_standalone_withdraw_to_withdrawal).collect(),
-            )
-        });
+        let withdraw = attributes
+            .payload_attributes
+            .withdrawals
+            .map(|withdrawals| {
+                Withdrawals::new(
+                    withdrawals
+                        .into_iter()
+                        .map(convert_standalone_withdraw_to_withdrawal)
+                        .collect(),
+                )
+            });
 
         let payload_attributes = EthPayloadBuilderAttributes {
             id,
@@ -142,7 +151,7 @@ impl PayloadBuilderAttributes for OptimismPayloadBuilderAttributes {
             // calculate basefee based on parent block's gas usage
             basefee: U256::from(
                 parent
-                    .next_block_base_fee(chain_spec.base_fee_params(self.timestamp()))
+                    .next_block_base_fee(chain_spec.base_fee_params_at_timestamp(self.timestamp()))
                     .unwrap_or_default(),
             ),
             // calculate excess gas based on parent block's blob gas usage
@@ -153,7 +162,10 @@ impl PayloadBuilderAttributes for OptimismPayloadBuilderAttributes {
         {
             cfg_with_handler_cfg = CfgEnvWithHandlerCfg {
                 cfg_env: cfg,
-                handler_cfg: HandlerCfg { spec_id, is_optimism: chain_spec.is_optimism() },
+                handler_cfg: HandlerCfg {
+                    spec_id,
+                    is_optimism: chain_spec.is_optimism(),
+                },
             };
         }
 
@@ -190,7 +202,14 @@ impl OptimismBuiltPayload {
         chain_spec: Arc<ChainSpec>,
         attributes: OptimismPayloadBuilderAttributes,
     ) -> Self {
-        Self { id, block, fees, sidecars: Vec::new(), chain_spec, attributes }
+        Self {
+            id,
+            block,
+            fees,
+            sidecars: Vec::new(),
+            chain_spec,
+            attributes,
+        }
     }
 
     /// Returns the identifier of the payload.
@@ -255,7 +274,14 @@ impl From<OptimismBuiltPayload> for ExecutionPayloadEnvelopeV2 {
 
 impl From<OptimismBuiltPayload> for OptimismExecutionPayloadEnvelopeV3 {
     fn from(value: OptimismBuiltPayload) -> Self {
-        let OptimismBuiltPayload { block, fees, sidecars, chain_spec, attributes, .. } = value;
+        let OptimismBuiltPayload {
+            block,
+            fees,
+            sidecars,
+            chain_spec,
+            attributes,
+            ..
+        } = value;
 
         let parent_beacon_block_root =
             if chain_spec.is_cancun_active_at_timestamp(attributes.timestamp()) {
@@ -275,7 +301,11 @@ impl From<OptimismBuiltPayload> for OptimismExecutionPayloadEnvelopeV3 {
             // Spec:
             // <https://github.com/ethereum/execution-apis/blob/fe8e13c288c592ec154ce25c534e26cb7ce0530d/src/engine/cancun.md#specification-2>
             should_override_builder: false,
-            blobs_bundle: sidecars.into_iter().map(Into::into).collect::<Vec<_>>().into(),
+            blobs_bundle: sidecars
+                .into_iter()
+                .map(Into::into)
+                .collect::<Vec<_>>()
+                .into(),
             parent_beacon_block_root,
         }
     }
@@ -294,7 +324,12 @@ pub(crate) fn payload_id_optimism(
     hasher.update(parent.as_slice());
     hasher.update(&attributes.payload_attributes.timestamp.to_be_bytes()[..]);
     hasher.update(attributes.payload_attributes.prev_randao.as_slice());
-    hasher.update(attributes.payload_attributes.suggested_fee_recipient.as_slice());
+    hasher.update(
+        attributes
+            .payload_attributes
+            .suggested_fee_recipient
+            .as_slice(),
+    );
     if let Some(withdrawals) = &attributes.payload_attributes.withdrawals {
         let mut buf = Vec::new();
         withdrawals.encode(&mut buf);

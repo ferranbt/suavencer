@@ -41,7 +41,11 @@ pub struct OptimismPayloadBuilder<EvmConfig> {
 impl<EvmConfig> OptimismPayloadBuilder<EvmConfig> {
     /// OptimismPayloadBuilder constructor.
     pub fn new(chain_spec: Arc<ChainSpec>, evm_config: EvmConfig) -> Self {
-        Self { compute_pending_block: true, chain_spec, evm_config }
+        Self {
+            compute_pending_block: true,
+            chain_spec,
+            evm_config,
+        }
     }
 
     /// Sets the rollup's compute pending block configuration option.
@@ -95,7 +99,7 @@ where
         if args.config.attributes.no_tx_pool {
             if let Ok(BuildOutcome::Better { payload, .. }) = self.try_build(args) {
                 trace!(target: "payload_builder", "[OPTIMISM] Forced best payload");
-                return Some(payload)
+                return Some(payload);
             }
         }
 
@@ -129,7 +133,10 @@ where
 
         let base_fee = initialized_block_env.basefee.to::<u64>();
         let block_number = initialized_block_env.number.to::<u64>();
-        let block_gas_limit: u64 = initialized_block_env.gas_limit.try_into().unwrap_or(u64::MAX);
+        let block_gas_limit: u64 = initialized_block_env
+            .gas_limit
+            .try_into()
+            .unwrap_or(u64::MAX);
 
         // apply eip-4788 pre block contract call
         pre_block_beacon_root_contract_call(
@@ -168,7 +175,10 @@ where
             excess_blob_gas = if chain_spec.is_cancun_active_at_timestamp(parent_block.timestamp) {
                 let parent_excess_blob_gas = parent_block.excess_blob_gas.unwrap_or_default();
                 let parent_blob_gas_used = parent_block.blob_gas_used.unwrap_or_default();
-                Some(calculate_excess_blob_gas(parent_excess_blob_gas, parent_blob_gas_used))
+                Some(calculate_excess_blob_gas(
+                    parent_excess_blob_gas,
+                    parent_blob_gas_used,
+                ))
             } else {
                 // for the first post-fork block, both parent.blob_gas_used and
                 // parent.excess_blob_gas are evaluated as 0
@@ -201,7 +211,12 @@ where
             parent_beacon_block_root: attributes.payload_attributes.parent_beacon_block_root,
         };
 
-        let block = Block { header, body: vec![], ommers: vec![], withdrawals };
+        let block = Block {
+            header,
+            body: vec![],
+            ommers: vec![],
+            withdrawals,
+        };
         let sealed_block = block.seal_slow();
 
         Ok(OptimismBuiltPayload::new(
@@ -233,12 +248,21 @@ where
     Client: StateProviderFactory,
     Pool: TransactionPool,
 {
-    let BuildArguments { client, pool, mut cached_reads, config, cancel, best_payload } = args;
+    let BuildArguments {
+        client,
+        pool,
+        mut cached_reads,
+        config,
+        cancel,
+        best_payload,
+    } = args;
 
     let state_provider = client.state_by_block_hash(config.parent_block.hash())?;
     let state = StateProviderDatabase::new(&state_provider);
-    let mut db =
-        State::builder().with_database_ref(cached_reads.as_db(&state)).with_bundle_update().build();
+    let mut db = State::builder()
+        .with_database_ref(cached_reads.as_db(&state))
+        .with_bundle_update()
+        .build();
     let extra_data = config.extra_data();
     let PayloadConfig {
         initialized_block_env,
@@ -251,15 +275,20 @@ where
 
     debug!(target: "payload_builder", id=%attributes.payload_attributes.payload_id(), parent_hash = ?parent_block.hash(), parent_number = parent_block.number, "building new payload");
     let mut cumulative_gas_used = 0;
-    let block_gas_limit: u64 = attributes
-        .gas_limit
-        .unwrap_or_else(|| initialized_block_env.gas_limit.try_into().unwrap_or(u64::MAX));
+    let block_gas_limit: u64 = attributes.gas_limit.unwrap_or_else(|| {
+        initialized_block_env
+            .gas_limit
+            .try_into()
+            .unwrap_or(u64::MAX)
+    });
     let base_fee = initialized_block_env.basefee.to::<u64>();
 
     let mut executed_txs = Vec::new();
     let mut best_txs = pool.best_transactions_with_attributes(BestTransactionsAttributes::new(
         base_fee,
-        initialized_block_env.get_blob_gasprice().map(|gasprice| gasprice as u64),
+        initialized_block_env
+            .get_blob_gasprice()
+            .map(|gasprice| gasprice as u64),
     ));
 
     let mut total_fees = U256::ZERO;
@@ -296,14 +325,14 @@ where
     for sequencer_tx in &attributes.transactions {
         // Check if the job was cancelled, if so we can exit early.
         if cancel.is_cancelled() {
-            return Ok(BuildOutcome::Cancelled)
+            return Ok(BuildOutcome::Cancelled);
         }
 
         // A sequencer's block should never contain blob transactions.
         if matches!(sequencer_tx.tx_type(), TxType::Eip4844) {
             return Err(PayloadBuilderError::other(
                 OptimismPayloadBuilderError::BlobTransactionRejected,
-            ))
+            ));
         }
 
         // Convert the transaction to a [TransactionSignedEcRecovered]. This is
@@ -345,11 +374,11 @@ where
                 match err {
                     EVMError::Transaction(err) => {
                         trace!(target: "payload_builder", %err, ?sequencer_tx, "Error in sequencer transaction, skipping.");
-                        continue
+                        continue;
                     }
                     err => {
                         // this is an error that we should treat as fatal for this attempt
-                        return Err(PayloadBuilderError::EvmExecutionError(err))
+                        return Err(PayloadBuilderError::EvmExecutionError(err));
                     }
                 }
             }
@@ -395,19 +424,19 @@ where
                 // invalid which also removes all dependent transaction from
                 // the iterator before we can continue
                 best_txs.mark_invalid(&pool_tx);
-                continue
+                continue;
             }
 
             // A sequencer's block should never contain blob transactions.
             if pool_tx.tx_type() == TxType::Eip4844 as u8 {
                 return Err(PayloadBuilderError::other(
                     OptimismPayloadBuilderError::BlobTransactionRejected,
-                ))
+                ));
             }
 
             // check if the job was cancelled, if so we can exit early
             if cancel.is_cancelled() {
-                return Ok(BuildOutcome::Cancelled)
+                return Ok(BuildOutcome::Cancelled);
             }
 
             // convert tx to a signed transaction
@@ -436,11 +465,11 @@ where
                                 best_txs.mark_invalid(&pool_tx);
                             }
 
-                            continue
+                            continue;
                         }
                         err => {
                             // this is an error that we should treat as fatal for this attempt
-                            return Err(PayloadBuilderError::EvmExecutionError(err))
+                            return Err(PayloadBuilderError::EvmExecutionError(err));
                         }
                     }
                 }
@@ -480,10 +509,16 @@ where
     // check if we have a better block
     if !is_better_payload(best_payload.as_ref(), total_fees) {
         // can skip building the block
-        return Ok(BuildOutcome::Aborted { fees: total_fees, cached_reads })
+        return Ok(BuildOutcome::Aborted {
+            fees: total_fees,
+            cached_reads,
+        });
     }
 
-    let WithdrawalsOutcome { withdrawals_root, withdrawals } = commit_withdrawals(
+    let WithdrawalsOutcome {
+        withdrawals_root,
+        withdrawals,
+    } = commit_withdrawals(
         &mut db,
         &chain_spec,
         attributes.payload_attributes.timestamp,
@@ -506,7 +541,9 @@ where
             attributes.payload_attributes.timestamp,
         )
         .expect("Number is in range");
-    let logs_bloom = bundle.block_logs_bloom(block_number).expect("Number is in range");
+    let logs_bloom = bundle
+        .block_logs_bloom(block_number)
+        .expect("Number is in range");
 
     // calculate the state root
     let state_root = state_provider.state_root(bundle.state())?;
@@ -524,7 +561,10 @@ where
         excess_blob_gas = if chain_spec.is_cancun_active_at_timestamp(parent_block.timestamp) {
             let parent_excess_blob_gas = parent_block.excess_blob_gas.unwrap_or_default();
             let parent_blob_gas_used = parent_block.blob_gas_used.unwrap_or_default();
-            Some(calculate_excess_blob_gas(parent_excess_blob_gas, parent_blob_gas_used))
+            Some(calculate_excess_blob_gas(
+                parent_excess_blob_gas,
+                parent_blob_gas_used,
+            ))
         } else {
             // for the first post-fork block, both parent.blob_gas_used and
             // parent.excess_blob_gas are evaluated as 0
@@ -558,7 +598,12 @@ where
     };
 
     // seal the block
-    let block = Block { header, body: executed_txs, ommers: vec![], withdrawals };
+    let block = Block {
+        header,
+        body: executed_txs,
+        ommers: vec![],
+        withdrawals,
+    };
 
     let sealed_block = block.seal_slow();
     debug!(target: "payload_builder", ?sealed_block, "sealed built block");
@@ -574,5 +619,8 @@ where
     // extend the payload with the blob sidecars from the executed txs
     payload.extend_sidecars(blob_sidecars);
 
-    Ok(BuildOutcome::Better { payload, cached_reads })
+    Ok(BuildOutcome::Better {
+        payload,
+        cached_reads,
+    })
 }
